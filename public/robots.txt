@@ -1,0 +1,6 @@
+# A&P Digital — allow all crawlers
+User-agent: *
+Allow: /
+
+# TODO once the final domain exists:
+# Sitemap: https://YOUR-DOMAIN/sitemap.xml

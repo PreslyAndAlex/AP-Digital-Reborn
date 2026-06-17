@@ -1,0 +1,67 @@
+.fm-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: clamp(0.75rem, 3vw, 2rem);
+  background: rgba(3, 4, 8, 0.78);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  overflow-y: auto;
+}
+
+.fm-dialog {
+  position: relative;
+  width: min(680px, 96vw);
+  margin: auto;
+  padding: clamp(1.8rem, 4vw, 3rem);
+  border-radius: var(--radius-lg);
+  background:
+    radial-gradient(120% 90% at 100% 0%, rgba(79, 139, 255, 0.12), transparent 55%),
+    var(--tile-2);
+  border: 1px solid var(--hairline-dark);
+  box-shadow: 0 40px 120px -24px rgba(0, 0, 0, 0.85);
+}
+
+.fm-close {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 1px solid var(--hairline-dark);
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--on-dark-soft);
+  transition:
+    color 0.2s var(--ease),
+    background-color 0.2s var(--ease),
+    border-color 0.2s var(--ease);
+}
+.fm-close:hover {
+  color: var(--on-dark);
+  background: rgba(255, 255, 255, 0.1);
+  border-color: var(--on-dark-muted);
+}
+
+.fm-head {
+  margin-bottom: 1.8rem;
+  max-width: 30ch;
+}
+.fm-head .eyebrow {
+  margin-bottom: 1rem;
+}
+.fm-head .h2 {
+  font-size: clamp(1.7rem, 3.4vw, 2.6rem);
+}
+.fm-lead {
+  margin-top: 1rem;
+  color: var(--on-dark-soft);
+  font-size: 1rem;
+  line-height: 1.45;
+}

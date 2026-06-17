@@ -1,0 +1,19 @@
+.logo {
+  display: block;
+}
+
+.logo-mark {
+  font-family: var(--font-serif);
+  font-size: 132px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.logo-word {
+  font-family: var(--font-ui);
+  font-size: 40px;
+  font-weight: 500;
+  letter-spacing: 0.42em;
+  /* compensate for trailing letter-spacing so it stays centred */
+  transform: translateX(0.21em);
+}

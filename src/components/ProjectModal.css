@@ -1,0 +1,176 @@
+.pm-backdrop {
+  position: fixed;
+  inset: 0;
+  /* above the fixed nav (z 1000) so the dialog's top bar isn't hidden */
+  z-index: 1300;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* extra top padding clears the nav and nudges the whole dialog down */
+  padding: 84px clamp(0.75rem, 3vw, 2rem) 28px;
+  background: rgba(3, 4, 8, 0.78);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.pm-dialog {
+  width: min(1200px, 96vw);
+  height: min(900px, 100%);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border-radius: var(--radius);
+  background: var(--tile-1);
+  border: 1px solid var(--hairline-dark);
+  box-shadow: 0 40px 120px -24px rgba(0, 0, 0, 0.85);
+}
+
+/* ---------- Top bar (browser-chrome style) ---------- */
+.pm-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  padding: 0.7rem 0.9rem;
+  background: rgba(255, 255, 255, 0.03);
+  border-bottom: 1px solid var(--hairline-dark-soft);
+}
+.pm-dots {
+  display: inline-flex;
+  gap: 6px;
+  flex: none;
+}
+.pm-dots i {
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+}
+.pm-dots i:nth-child(1) {
+  background: #ff5f57;
+}
+.pm-dots i:nth-child(2) {
+  background: #febc2e;
+}
+.pm-dots i:nth-child(3) {
+  background: #28c840;
+}
+
+.pm-url {
+  flex: 1;
+  min-width: 0;
+  padding: 0.35rem 0.8rem;
+  border-radius: 7px;
+  background: rgba(255, 255, 255, 0.05);
+  font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+  font-size: 0.78rem;
+  color: var(--on-dark-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.pm-meta {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  flex: none;
+  min-width: 0;
+}
+.pm-title {
+  font-weight: 600;
+  font-size: 0.92rem;
+  color: var(--on-dark);
+}
+.pm-cat {
+  font-size: 0.8rem;
+  color: var(--accent-bright);
+}
+
+.pm-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex: none;
+}
+.pm-open {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.45rem 0.9rem;
+  border-radius: var(--radius-pill);
+  background: var(--accent);
+  color: #fff;
+  font-size: 0.82rem;
+  font-weight: 600;
+  transition:
+    transform 0.2s var(--ease),
+    background-color 0.2s var(--ease),
+    box-shadow 0.2s var(--ease);
+}
+.pm-open:hover {
+  background: var(--accent-bright);
+  transform: translateY(-1px);
+  box-shadow: 0 0 24px -8px var(--accent-glow);
+}
+
+.pm-close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: 1px solid var(--hairline-dark);
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--on-dark-soft);
+  transition:
+    color 0.2s var(--ease),
+    background-color 0.2s var(--ease),
+    border-color 0.2s var(--ease);
+}
+.pm-close:hover {
+  color: var(--on-dark);
+  background: rgba(255, 255, 255, 0.1);
+  border-color: var(--on-dark-muted);
+}
+
+/* ---------- Body / live frame ---------- */
+.pm-body {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  background: #fff;
+}
+.pm-frame {
+  width: 100%;
+  height: 100%;
+  border: 0;
+  display: block;
+}
+.pm-placeholder {
+  width: 100%;
+  height: 100%;
+  display: grid;
+  place-items: center;
+  background-size: cover;
+  background-position: center top;
+}
+.pm-soon {
+  padding: 0.6rem 1.2rem;
+  border-radius: var(--radius-pill);
+  background: rgba(3, 4, 8, 0.66);
+  border: 1px solid var(--hairline-dark);
+  color: var(--on-dark);
+  font-size: 0.92rem;
+  font-weight: 500;
+  backdrop-filter: blur(4px);
+}
+
+@media (max-width: 620px) {
+  .pm-meta {
+    display: none;
+  }
+  .pm-open span,
+  .pm-open {
+    font-size: 0.78rem;
+  }
+}

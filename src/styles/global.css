@@ -1,0 +1,372 @@
+/* A&P Digital (Reborn) — reset + base layer (adapted from Haldane) */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  scroll-behavior: smooth;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+body {
+  font-family: var(--font-ui);
+  font-feature-settings: var(--feat);
+  color: var(--fg);
+  background: var(--tile-1);
+  line-height: 1.47;
+  letter-spacing: -0.011em;
+  overflow-x: hidden;
+  width: 100%;
+  max-width: 100%;
+  min-height: 100vh;
+  -webkit-tap-highlight-color: transparent;
+}
+
+img,
+svg,
+video {
+  display: block;
+  max-width: 100%;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+  letter-spacing: inherit;
+  color: inherit;
+}
+
+button {
+  cursor: pointer;
+  background: none;
+  border: none;
+}
+
+::selection {
+  background: var(--accent);
+  color: #fff;
+}
+
+/* ---- Accessibility: keyboard focus + skip link ---- */
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+:focus:not(:focus-visible) {
+  outline: none;
+}
+
+.skip-link {
+  position: fixed;
+  top: 0.7rem;
+  left: 0.7rem;
+  z-index: 10000;
+  padding: 0.7em 1.1em;
+  background: var(--accent);
+  color: #fff;
+  font-weight: 600;
+  font-size: 0.95rem;
+  border-radius: var(--radius-pill);
+  transform: translateY(-180%);
+  transition: transform 0.25s var(--ease);
+}
+.skip-link:focus {
+  transform: translateY(0);
+  outline: none;
+}
+
+/* ----------------------------------------------------------------
+   Section chassis — each section is a full-bleed "tile". The colour
+   change between tiles IS the divider (no borders, no chrome).
+   ---------------------------------------------------------------- */
+.tile {
+  position: relative;
+  padding-block: clamp(6rem, 12vw, 11rem);
+  background: var(--bg);
+  color: var(--fg);
+  isolation: isolate;
+}
+.tile--dark {
+  --bg: var(--tile-1);
+  --fg: var(--on-dark);
+}
+.tile--darker {
+  --bg: var(--tile-3);
+  --fg: var(--on-dark);
+}
+.tile--void {
+  --bg: var(--void);
+  --fg: var(--on-dark);
+}
+.tile--light {
+  --bg: var(--parchment);
+  --fg: var(--ink);
+}
+.tile--white {
+  --bg: var(--canvas);
+  --fg: var(--ink);
+}
+
+.container {
+  width: 100%;
+  max-width: var(--maxw);
+  margin-inline: auto;
+  padding-inline: var(--gutter);
+}
+.container--text {
+  max-width: var(--maxw-text);
+}
+
+/* ----------------------------------------------------------------
+   Type scale — tight tracking at display sizes (Apple cadence)
+   ---------------------------------------------------------------- */
+.eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-size: clamp(0.72rem, 0.9vw, 0.8rem);
+  font-weight: 600;
+  letter-spacing: 0.34em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+.eyebrow--muted {
+  color: var(--ink-faint);
+}
+.tile--dark .eyebrow--muted,
+.tile--void .eyebrow--muted,
+.tile--darker .eyebrow--muted {
+  color: var(--on-dark-muted);
+}
+
+.display {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: clamp(2.6rem, 7vw, 6rem);
+  line-height: 1.02;
+  letter-spacing: -0.03em;
+}
+
+.h2 {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: clamp(2rem, 4.6vw, 3.6rem);
+  line-height: 1.05;
+  letter-spacing: -0.025em;
+  max-width: 18ch;
+}
+
+.h3 {
+  font-weight: 600;
+  font-size: clamp(1.25rem, 1.8vw, 1.6rem);
+  line-height: 1.12;
+  letter-spacing: -0.02em;
+}
+
+.lead {
+  font-size: clamp(1.12rem, 1.7vw, 1.5rem);
+  font-weight: 400;
+  line-height: 1.32;
+  letter-spacing: -0.012em;
+  color: var(--fg);
+  max-width: 42ch;
+}
+
+.body {
+  font-size: 1.0625rem;
+  line-height: 1.47;
+  color: var(--ink-soft);
+  max-width: 64ch;
+}
+.tile--dark .body,
+.tile--void .body,
+.tile--darker .body {
+  color: var(--on-dark-soft);
+}
+
+.muted {
+  color: var(--ink-muted);
+}
+.tile--dark .muted,
+.tile--void .muted,
+.tile--darker .muted {
+  color: var(--on-dark-muted);
+}
+
+.gradient-text {
+  background: var(--accent-grad);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* ----------------------------------------------------------------
+   Buttons — a high-contrast accent pill and a hairline ghost pill.
+   scale(0.97) on press is the system micro-motion.
+   ---------------------------------------------------------------- */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5em;
+  padding: 0.82em 1.55em;
+  border-radius: var(--radius-pill);
+  border: 1px solid transparent;
+  font-size: 1.0625rem;
+  font-weight: 500;
+  letter-spacing: -0.012em;
+  white-space: nowrap;
+  transition:
+    transform 0.18s var(--ease),
+    background-color 0.3s var(--ease),
+    border-color 0.3s var(--ease),
+    color 0.3s var(--ease),
+    box-shadow 0.3s var(--ease),
+    opacity 0.3s var(--ease);
+}
+.btn:active {
+  transform: scale(0.97);
+}
+
+/* accent: the one solid call-to-action */
+.btn--accent {
+  background: var(--accent);
+  color: #fff;
+  box-shadow: var(--glow-accent);
+}
+.btn--accent:hover {
+  background: var(--accent-bright);
+  transform: translateY(-2px);
+  box-shadow: 0 0 80px -6px var(--accent-glow);
+}
+
+/* solid: inverts to the surface it sits on */
+.btn--solid {
+  background: var(--fg);
+  color: var(--bg);
+}
+.btn--solid:hover {
+  opacity: 0.86;
+}
+
+/* ghost: hairline outline in the current ink */
+.btn--ghost {
+  border-color: var(--hairline-strong);
+  color: var(--fg);
+  background: transparent;
+}
+.tile--dark .btn--ghost,
+.tile--void .btn--ghost,
+.tile--darker .btn--ghost {
+  border-color: var(--hairline-dark);
+}
+.btn--ghost:hover {
+  background: color-mix(in srgb, currentColor 9%, transparent);
+}
+
+.btn--sm {
+  padding: 0.6em 1.15em;
+  font-size: 0.95rem;
+}
+.btn--lg {
+  padding: 1.05em 2.2em;
+  font-size: 1.18rem;
+}
+
+/* quiet text link in the accent */
+.link {
+  color: var(--accent);
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35em;
+}
+.link .arr {
+  transition: transform 0.3s var(--ease);
+}
+.link:hover .arr {
+  transform: translateX(0.25em);
+}
+
+/* ----------------------------------------------------------------
+   Section heads
+   ---------------------------------------------------------------- */
+.head {
+  max-width: 50rem;
+}
+.head .eyebrow {
+  display: inline-flex;
+  margin-bottom: 1.3rem;
+}
+.head .lead {
+  margin-top: 1.6rem;
+  max-width: 50ch;
+}
+.head--center {
+  margin-inline: auto;
+  text-align: center;
+}
+.head--center .eyebrow {
+  justify-content: center;
+}
+.head--center .h2,
+.head--center .display {
+  margin-inline: auto;
+}
+.head--center .lead {
+  margin-inline: auto;
+}
+
+/* ----------------------------------------------------------------
+   Ambient grain (atmosphere only)
+   ---------------------------------------------------------------- */
+.grain {
+  position: fixed;
+  inset: 0;
+  z-index: 9000;
+  pointer-events: none;
+  opacity: 0.035;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* ----------------------------------------------------------------
+   Reveal primitive — GSAP lifts [data-reveal] into place.
+   ---------------------------------------------------------------- */
+[data-reveal] {
+  opacity: 0;
+  transform: translateY(28px);
+  will-change: transform, opacity;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  [data-reveal] {
+    opacity: 1;
+    transform: none;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}
