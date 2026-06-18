@@ -26,10 +26,10 @@
   isolation: isolate;
 }
 
-/* the two accent cells get a quiet lime wash */
+/* the two accent cells get a quiet blue wash */
 .cell--accent {
   background:
-    radial-gradient(125% 125% at 100% 0%, rgba(198, 255, 52, 0.12), transparent 60%),
+    radial-gradient(125% 125% at 100% 0%, rgba(79, 139, 255, 0.16), transparent 60%),
     var(--tile-1);
 }
 

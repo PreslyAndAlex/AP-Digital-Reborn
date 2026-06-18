@@ -66,6 +66,6 @@
 }
 .cselect-option.is-selected {
   background: var(--accent);
-  color: var(--on-accent);
+  color: #fff;
   font-weight: 600;
 }
