@@ -1,10 +1,17 @@
-import 'dotenv/config'
+import dotenv from 'dotenv'
 import path from 'node:path'
+
+// In dev, let .env win over any ambient vars the launcher injects. Some dev
+// tools set PORT (e.g. to the frontend's port), which would otherwise hijack
+// the API port and collide with Vite. In production the host's env is
+// authoritative (there's normally no .env on the server).
+dotenv.config({ override: process.env.NODE_ENV !== 'production' })
 import { fileURLToPath } from 'node:url'
 import express from 'express'
 import cors from 'cors'
 import helmet from 'helmet'
 import nodemailer from 'nodemailer'
+import { promises as dnsp } from 'node:dns'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const ROOT = path.resolve(__dirname, '..')
@@ -60,11 +67,31 @@ const clean = (v, max = 5000) => String(v ?? '').trim().slice(0, max)
 // CR/LF so crafted input can never smuggle extra headers into the message.
 const cleanLine = (v, max) => clean(v, max).replace(/[\r\n]+/g, ' ')
 
+// Field rules (mirrored on the client).
+const NAME_MAX = 30
+const MESSAGE_MAX = 5000
+// Bulgarian phone: national 0 + 9 digits (e.g. 0888 123 456), or +359 + 9
+// significant digits. Separators are stripped before testing.
+const bgPhoneRe = /^(?:\+359|0)[1-9]\d{7,8}$/
+const normalizePhone = (v) => String(v).replace(/[\s\-().]/g, '')
+
+// Does the email's domain actually accept mail? An MX lookup catches typos and
+// made-up domains (e.g. "gmial.com", "example.xyz") that pass a format check.
+async function domainHasMx(domain) {
+  if (!domain) return false
+  try {
+    const mx = await dnsp.resolveMx(domain)
+    return Array.isArray(mx) && mx.length > 0
+  } catch {
+    return false
+  }
+}
+
 // Very small in-memory rate limiter (per IP). Good enough for a single-node
 // deploy; swap for a shared store if you scale horizontally.
 const HITS = new Map()
-const WINDOW_MS = 10 * 60 * 1000
-const MAX_HITS = 5
+const WINDOW_MS = 60 * 60 * 1000 // 1 hour
+const MAX_HITS = 5 // max submissions per IP per window
 function rateLimited(ip) {
   const now = Date.now()
   const arr = (HITS.get(ip) || []).filter((t) => now - t < WINDOW_MS)
@@ -149,15 +176,29 @@ app.post('/api/contact', async (req, res) => {
   const email = cleanLine(req.body?.email, 320)
   const phone = cleanLine(req.body?.phone, 60)
   const projectType = cleanLine(req.body?.projectType, 120)
-  const message = clean(req.body?.message, 5000)
+  // keep a little over the cap so an over-length message is still detectable
+  const messageRaw = clean(req.body?.message, MESSAGE_MAX + 2000)
+  const message = messageRaw.slice(0, MESSAGE_MAX)
   const lang = cleanLine(req.body?.lang, 8) || 'en'
 
-  // Server-side validation (mirrors the client).
+  // Server-side validation (mirrors the client) — each field has its own code,
+  // which the client maps back to a specific message.
   const errors = {}
+
   if (!name) errors.name = 'required'
+  else if (name.length > NAME_MAX) errors.name = 'too_long'
+
   if (!email) errors.email = 'required'
   else if (!emailRe.test(email)) errors.email = 'invalid'
-  if (!message) errors.message = 'required'
+  // domain must be real and able to receive mail (MX records present)
+  else if (!(await domainHasMx(email.split('@')[1]))) errors.email = 'domain'
+
+  // phone is optional; validate only when one was provided
+  if (phone && !bgPhoneRe.test(normalizePhone(phone))) errors.phone = 'invalid'
+
+  if (!messageRaw) errors.message = 'required'
+  else if (messageRaw.length > MESSAGE_MAX) errors.message = 'too_long'
+
   if (Object.keys(errors).length) {
     return res.status(400).json({ ok: false, errors })
   }

@@ -4,9 +4,10 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
+    "dev": "concurrently -n web,api -c cyan,magenta \"vite\" \"node server/index.js\"",
+    "dev:web": "vite",
     "server": "node server/index.js",
-    "dev:all": "concurrently -n web,api -c cyan,magenta \"vite\" \"node server/index.js\"",
+    "mail:check": "node scripts/check-mail.mjs",
     "build": "tsc -b && vite build",
     "start": "cross-env NODE_ENV=production node server/index.js",
     "lint": "eslint .",

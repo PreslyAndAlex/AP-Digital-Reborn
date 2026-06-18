@@ -145,9 +145,14 @@ export const en = {
     },
     errors: {
       name: 'Please tell us your name.',
+      nameLong: 'Name can be at most 30 characters.',
       email: 'Please enter your email.',
       emailBad: 'That email looks off.',
+      emailDomain: "That email's domain can't receive mail — check for a typo.",
+      phone: 'Enter a valid Bulgarian phone number (e.g. 0888 123 456 or +359 88 123 4567).',
       message: 'Let us know what you need.',
+      messageLong: 'Your message is too long (max 5000 characters).',
+      rate: 'Too many messages sent. Please try again in an hour.',
     },
     projectTypes: [
       'Website',

@@ -3,29 +3,52 @@ import { useTranslation } from 'react-i18next'
 import Select from './Select'
 import './ContactForm.css'
 
-type Errors = Partial<Record<'name' | 'email' | 'message', string>>
+type FieldErrors = Partial<Record<'name' | 'email' | 'phone' | 'message', string>>
 
 const emailRe = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+// Bulgarian phone: national 0 + 9 digits (e.g. 0888 123 456) or international
+// +359 + 9 significant digits (also allows 8 for shorter landlines). Any
+// spaces / dashes / brackets are stripped before testing.
+const bgPhoneRe = /^(?:\+359|0)[1-9]\d{7,8}$/
+const NAME_MAX = 30
+const MESSAGE_MAX = 5000
 
-/**
- * The contact form — fields, client validation, honeypot and the POST to
- * /api/contact. Unchanged behaviour from the original site; only the wrapper
- * (now a modal) and styling differ. On success it shows a confirmation in
- * place of the fields.
- */
+const normalizePhone = (p: string) => p.replace(/[\s\-().]/g, '')
+
 export default function ContactForm() {
   const { t, i18n } = useTranslation()
   const projectTypes = t('contact.projectTypes', { returnObjects: true }) as string[]
-  const [errors, setErrors] = useState<Errors>({})
+  const [errors, setErrors] = useState<FieldErrors>({})
+  const [formError, setFormError] = useState<string | null>(null)
   const [sent, setSent] = useState(false)
   const [sending, setSending] = useState(false)
-  const [failed, setFailed] = useState(false)
   // track the selection by index so it survives a language switch
   const [typeIndex, setTypeIndex] = useState(0)
   const projectType = projectTypes[typeIndex] ?? projectTypes[0]
 
+  // Turn the server's error codes into the matching localized messages. The
+  // server is the source of truth for checks the client can't do (e.g. whether
+  // the email domain can actually receive mail).
+  const mapServerErrors = (e: Record<string, string>): FieldErrors => {
+    const out: FieldErrors = {}
+    if (e.name) out.name = e.name === 'too_long' ? t('contact.errors.nameLong') : t('contact.errors.name')
+    if (e.email)
+      out.email =
+        e.email === 'domain'
+          ? t('contact.errors.emailDomain')
+          : e.email === 'invalid'
+            ? t('contact.errors.emailBad')
+            : t('contact.errors.email')
+    if (e.phone) out.phone = t('contact.errors.phone')
+    if (e.message)
+      out.message =
+        e.message === 'too_long' ? t('contact.errors.messageLong') : t('contact.errors.message')
+    return out
+  }
+
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault()
+    setFormError(null)
     const form = e.currentTarget
     const data = new FormData(form)
     const name = String(data.get('name') ?? '').trim()
@@ -35,16 +58,23 @@ export default function ContactForm() {
     // honeypot — humans never see this field; bots fill it and get dropped
     const website = String(data.get('website') ?? '')
 
-    const next: Errors = {}
+    // client-side checks — each with its own message
+    const next: FieldErrors = {}
     if (!name) next.name = t('contact.errors.name')
+    else if (name.length > NAME_MAX) next.name = t('contact.errors.nameLong')
+
     if (!email) next.email = t('contact.errors.email')
     else if (!emailRe.test(email)) next.email = t('contact.errors.emailBad')
+
+    // phone is optional, but if given it must be a valid Bulgarian number
+    if (phone && !bgPhoneRe.test(normalizePhone(phone))) next.phone = t('contact.errors.phone')
+
     if (!message) next.message = t('contact.errors.message')
+    else if (message.length > MESSAGE_MAX) next.message = t('contact.errors.messageLong')
 
     setErrors(next)
     if (Object.keys(next).length > 0) return
 
-    setFailed(false)
     setSending(true)
     try {
       const res = await fetch('/api/contact', {
@@ -60,12 +90,32 @@ export default function ContactForm() {
           lang: i18n.language,
         }),
       })
-      if (!res.ok) throw new Error('request_failed')
-      setSent(true)
-      form.reset()
-      setTypeIndex(0)
+
+      // rate limited
+      if (res.status === 429) {
+        setFormError(t('contact.errors.rate'))
+        return
+      }
+
+      const body = await res.json().catch(() => null)
+
+      if (res.ok && body?.ok) {
+        setSent(true)
+        form.reset()
+        setTypeIndex(0)
+        return
+      }
+
+      // server rejected specific fields (incl. checks the client can't do,
+      // like the email-domain deliverability check)
+      if (res.status === 400 && body?.errors) {
+        setErrors(mapServerErrors(body.errors))
+        return
+      }
+
+      setFormError(t('contact.form.error'))
     } catch {
-      setFailed(true)
+      setFormError(t('contact.form.error'))
     } finally {
       setSending(false)
     }
@@ -105,6 +155,7 @@ export default function ContactForm() {
         <div className="cform-field">
           <label htmlFor="phone">{t('contact.form.phone')}</label>
           <input id="phone" name="phone" type="tel" placeholder={t('contact.form.phonePh')} />
+          {errors.phone && <span className="cform-error">{errors.phone}</span>}
         </div>
 
         <div className="cform-field">
@@ -131,9 +182,9 @@ export default function ContactForm() {
         {sending ? t('contact.form.sending') : t('contact.form.send')}
       </button>
 
-      {failed && (
+      {formError && (
         <p className="cform-fail" role="alert">
-          {t('contact.form.error')}
+          {formError}
         </p>
       )}
     </form>
