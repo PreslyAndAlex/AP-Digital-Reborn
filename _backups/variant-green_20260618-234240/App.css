@@ -56,47 +56,20 @@
 .nav__links a:hover {
   color: var(--on-dark);
 }
-/* fixed slots sized to the wider Bulgarian labels so the links keep their
-   position when the language changes (no shifting between EN and BG) */
-.nav__links a[href='#how'] {
-  min-width: 58px;
-}
-.nav__links a[href='#work'] {
-  min-width: 62px;
-}
-.nav__links a[href='#faq'] {
-  min-width: 64px;
-}
 
-/* language switch — both codes shown (EN / BG); the active one is highlighted */
 .nav__lang {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.4rem;
   font-size: 0.82rem;
   font-weight: 500;
   letter-spacing: 0.06em;
-}
-.nav__lang-opt {
-  color: var(--on-dark-muted);
-  transition: color 0.2s var(--ease);
-}
-.nav__lang-opt:hover {
   color: var(--on-dark-soft);
+  transition: color 0.25s var(--ease);
 }
-.nav__lang-opt.is-active {
-  color: var(--accent);
-  font-weight: 600;
-}
-.nav__lang-sep {
-  color: var(--on-dark-muted);
-  opacity: 0.55;
+.nav__lang:hover {
+  color: var(--on-dark);
 }
 
 .nav__cta {
   flex: none;
-  /* hold the Bulgarian width so the button doesn't resize between languages */
-  min-width: 160px;
 }
 
 @media (max-width: 760px) {

@@ -42,11 +42,11 @@
   --hairline: #e3e3e6;
   --hairline-strong: #d2d2d7;
 
-  /* ---- Near-black tiles (the dominant surfaces) ---- */
-  --void: #000000;
-  --tile-1: #0a0a0c;
-  --tile-2: #111115;
-  --tile-3: #08080a;
+  /* ---- Carbon surfaces (the dominant surfaces) ---- */
+  --void: #000000; /* kept pure black for the hero + video blend */
+  --tile-1: #171717; /* carbon (rgb 23 23 23) — page base + dark sections */
+  --tile-2: #1f1f1f; /* carbon, lifted — cards / step boxes */
+  --tile-3: #101010; /* carbon, recessed — "darker" sections */
 
   /* ---- Text on dark ---- */
   --on-dark: #f5f5f7;
@@ -55,15 +55,15 @@
   --hairline-dark: rgba(255, 255, 255, 0.12);
   --hairline-dark-soft: rgba(255, 255, 255, 0.07);
 
-  /* ---- The single accent: a cool electric blue (replaces Haldane gold) ---- */
-  --accent: #4f8bff;
-  --accent-bright: #7fb0ff;
-  --accent-deep: #2f63d6;
-  --accent-glow: rgba(79, 139, 255, 0.5);
-  --on-accent: #06122e;
+  /* ---- The single accent: electric lime (rgb 198 255 52) ---- */
+  --accent: #c6ff34;
+  --accent-bright: #d8ff6e;
+  --accent-deep: #a4e01c;
+  --accent-glow: rgba(198, 255, 52, 0.45);
+  --on-accent: #16180b; /* near-black — readable text on the bright lime */
 
-  /* the original A&P blue→cyan gradient — logo rule, gradient text, fine lines */
-  --accent-2: #38d6e6;
+  /* lime sweep — logo rule, gradient text, fine lines */
+  --accent-2: #ecff8f;
   --accent-grad: linear-gradient(90deg, var(--accent) -15%, var(--accent-2) 115%);
   --accent-grad-tilt: linear-gradient(120deg, var(--accent) -15%, var(--accent-2) 115%);
 

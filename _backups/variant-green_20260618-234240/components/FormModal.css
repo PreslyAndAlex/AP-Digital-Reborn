@@ -19,7 +19,7 @@
   padding: clamp(1.8rem, 4vw, 3rem);
   border-radius: var(--radius-lg);
   background:
-    radial-gradient(120% 90% at 100% 0%, rgba(79, 139, 255, 0.12), transparent 55%),
+    radial-gradient(120% 90% at 100% 0%, rgba(198, 255, 52, 0.1), transparent 55%),
     var(--tile-2);
   border: 1px solid var(--hairline-dark);
   box-shadow: 0 40px 120px -24px rgba(0, 0, 0, 0.85);

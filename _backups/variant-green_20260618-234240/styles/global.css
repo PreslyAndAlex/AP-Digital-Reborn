@@ -58,7 +58,7 @@ button {
 
 ::selection {
   background: var(--accent);
-  color: #fff;
+  color: var(--on-accent);
 }
 
 /* ---- Accessibility: keyboard focus + skip link ---- */
@@ -78,7 +78,7 @@ button {
   z-index: 10000;
   padding: 0.7em 1.1em;
   background: var(--accent);
-  color: #fff;
+  color: var(--on-accent);
   font-weight: 600;
   font-size: 0.95rem;
   border-radius: var(--radius-pill);
@@ -246,7 +246,7 @@ button {
 /* accent: the one solid call-to-action */
 .btn--accent {
   background: var(--accent);
-  color: #fff;
+  color: var(--on-accent);
   box-shadow: var(--glow-accent);
 }
 .btn--accent:hover {

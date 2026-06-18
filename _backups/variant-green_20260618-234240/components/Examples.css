@@ -32,7 +32,7 @@
   transform: scale(0.97);
 }
 .filter-pill.is-active {
-  color: #fff;
+  color: var(--on-accent);
   background: var(--accent);
   border-color: transparent;
 }

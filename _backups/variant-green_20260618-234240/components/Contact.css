@@ -1,0 +1,88 @@
+.contact-cta {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.contact-cta .eyebrow {
+  justify-content: center;
+  margin-bottom: 1.4rem;
+}
+
+.contact-cta .display {
+  max-width: 16ch;
+  margin-inline: auto;
+}
+
+.contact-sub {
+  margin: 1.6rem auto 0;
+  max-width: 46ch;
+  color: var(--on-dark-soft);
+  font-size: 1.12rem;
+  line-height: 1.45;
+}
+
+.contact-actions {
+  margin-top: 2.6rem;
+}
+
+/* contact details — a quiet horizontal row under the button */
+.contact-details {
+  list-style: none;
+  margin-top: 3rem;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 1rem 3rem;
+}
+.contact-details li {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  align-items: center;
+}
+.contact-details-k {
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+.contact-details a,
+.contact-details li > span:not(.contact-details-k) {
+  color: var(--on-dark);
+  font-size: 1rem;
+  transition: color 0.2s var(--ease);
+}
+.contact-details a:hover {
+  color: var(--accent-bright);
+}
+
+.contact-socials {
+  margin-top: 2.4rem;
+  display: flex;
+  justify-content: center;
+  gap: 0.8rem;
+}
+.social {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 1px solid var(--hairline-dark);
+  color: var(--on-dark-soft);
+  transition:
+    color 0.2s var(--ease),
+    border-color 0.2s var(--ease),
+    background-color 0.2s var(--ease),
+    transform 0.18s var(--ease);
+}
+.social:hover {
+  color: var(--on-dark);
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+  transform: translateY(-2px);
+}

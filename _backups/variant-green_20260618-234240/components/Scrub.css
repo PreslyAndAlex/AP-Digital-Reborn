@@ -1,0 +1,22 @@
+.scrub-section {
+  background: radial-gradient(120% 90% at 50% 0%, #131319 0%, var(--tile-1) 55%, var(--tile-3) 100%);
+}
+
+.scrub {
+  max-width: 26ch;
+  margin-inline: auto;
+  text-align: center;
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: clamp(2rem, 4.6vw, 3.7rem);
+  line-height: 1.16;
+  letter-spacing: -0.025em;
+  color: var(--on-dark);
+}
+.scrub .w {
+  opacity: 0.16;
+  transition: opacity 0.2s linear;
+}
+.scrub .w--accent {
+  color: var(--accent);
+}

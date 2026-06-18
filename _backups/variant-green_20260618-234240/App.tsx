@@ -52,6 +52,7 @@ export default function App() {
     if ('fonts' in document) document.fonts.ready.then(() => ScrollTrigger.refresh())
   })
 
+  const toggleLang = () => i18n.changeLanguage(lang === 'bg' ? 'en' : 'bg')
   const openForm = () => setFormOpen(true)
   const year = new Date().getFullYear()
 
@@ -72,27 +73,14 @@ export default function App() {
           <a href="#work">{t('nav.work')}</a>
           <a href="#faq">{t('nav.faq')}</a>
         </div>
-        <div className="nav__lang" role="group" aria-label={t('nav.langLabel')}>
-          <button
-            type="button"
-            className={`nav__lang-opt${lang === 'en' ? ' is-active' : ''}`}
-            onClick={() => i18n.changeLanguage('en')}
-            aria-pressed={lang === 'en'}
-          >
-            EN
-          </button>
-          <span className="nav__lang-sep" aria-hidden="true">
-            /
-          </span>
-          <button
-            type="button"
-            className={`nav__lang-opt${lang === 'bg' ? ' is-active' : ''}`}
-            onClick={() => i18n.changeLanguage('bg')}
-            aria-pressed={lang === 'bg'}
-          >
-            BG
-          </button>
-        </div>
+        <button
+          type="button"
+          className="nav__lang"
+          onClick={toggleLang}
+          aria-label={t('nav.langLabel')}
+        >
+          {lang.toUpperCase()}
+        </button>
         <button type="button" className="btn btn--accent btn--sm nav__cta" onClick={openForm}>
           {t('nav.cta')}
         </button>
