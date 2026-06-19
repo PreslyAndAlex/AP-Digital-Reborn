@@ -12,6 +12,7 @@ export const en = {
     faq: 'FAQ',
     cta: 'Start a project',
     langLabel: 'Switch language',
+    menu: 'Menu',
   },
   hero: {
     tagline: 'Create with Us',

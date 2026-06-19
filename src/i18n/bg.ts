@@ -15,6 +15,7 @@ export const bg: Translation = {
     faq: 'Въпроси',
     cta: 'Започни проект',
     langLabel: 'Смяна на езика',
+    menu: 'Меню',
   },
   hero: {
     tagline: 'Създай с Нас',

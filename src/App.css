@@ -43,10 +43,49 @@
   color: var(--on-dark-muted);
 }
 
+/* right-side cluster — inline on desktop, a dropdown panel on mobile */
+.nav__right {
+  display: flex;
+  align-items: center;
+  gap: 1.4rem;
+  margin-left: auto;
+}
+
+/* hamburger — hidden on desktop, shown below the breakpoint */
+.nav__burger {
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  width: 42px;
+  height: 42px;
+  margin-left: auto;
+  border-radius: var(--radius-sm);
+}
+.nav__burger span {
+  display: block;
+  width: 22px;
+  height: 2px;
+  border-radius: 2px;
+  background: var(--on-dark);
+  transition:
+    transform 0.25s var(--ease),
+    opacity 0.2s var(--ease);
+}
+.nav__burger.is-open span:nth-child(1) {
+  transform: translateY(7px) rotate(45deg);
+}
+.nav__burger.is-open span:nth-child(2) {
+  opacity: 0;
+}
+.nav__burger.is-open span:nth-child(3) {
+  transform: translateY(-7px) rotate(-45deg);
+}
+
 .nav__links {
   display: flex;
   gap: 1.6rem;
-  margin-left: auto;
   font-size: 0.88rem;
   color: var(--on-dark-soft);
 }
@@ -103,8 +142,53 @@
   .nav {
     gap: 1rem;
   }
-  .nav__links {
+  .nav__burger {
+    display: flex;
+  }
+  /* the right cluster collapses into a dropdown anchored to the top-right */
+  .nav__right {
+    position: absolute;
+    top: calc(100% + 0.5rem);
+    right: var(--gutter);
+    margin-left: 0;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.9rem;
+    width: min(250px, calc(100vw - 2 * var(--gutter)));
+    padding: 1rem 1.1rem 1.2rem;
+    background: color-mix(in srgb, var(--tile-1) 94%, transparent);
+    border: 1px solid var(--hairline-dark);
+    border-radius: var(--radius);
+    box-shadow: 0 24px 60px -22px rgba(0, 0, 0, 0.75);
+    backdrop-filter: saturate(160%) blur(18px);
+    -webkit-backdrop-filter: saturate(160%) blur(18px);
     display: none;
+  }
+  .nav__right.is-open {
+    display: flex;
+  }
+  .nav__links {
+    flex-direction: column;
+    gap: 0.1rem;
+    font-size: 1rem;
+  }
+  .nav__links a {
+    padding: 0.5rem 0;
+  }
+  .nav__links a[href='#how'],
+  .nav__links a[href='#work'],
+  .nav__links a[href='#faq'] {
+    min-width: 0;
+  }
+  .nav__lang {
+    justify-content: flex-start;
+    font-size: 1rem;
+    padding-top: 0.7rem;
+    border-top: 1px solid var(--hairline-dark-soft);
+  }
+  .nav__cta {
+    width: 100%;
+    min-width: 0;
   }
 }
 

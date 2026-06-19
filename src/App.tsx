@@ -15,11 +15,28 @@ export default function App() {
   const { t, i18n } = useTranslation()
   const lang = i18n.language === 'bg' ? 'bg' : 'en'
   const [formOpen, setFormOpen] = useState(false)
+  const [menuOpen, setMenuOpen] = useState(false)
+  const closeMenu = () => setMenuOpen(false)
 
   // Always open at the hero — don't restore a previous scroll position.
   useEffect(() => {
     if ('scrollRestoration' in history) history.scrollRestoration = 'manual'
     window.scrollTo(0, 0)
+  }, [])
+
+  // Close the mobile menu on Escape and whenever we grow back to desktop width.
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setMenuOpen(false)
+    }
+    const mq = window.matchMedia('(min-width: 761px)')
+    const onWide = () => mq.matches && setMenuOpen(false)
+    document.addEventListener('keydown', onKey)
+    mq.addEventListener('change', onWide)
+    return () => {
+      document.removeEventListener('keydown', onKey)
+      mq.removeEventListener('change', onWide)
+    }
   }, [])
 
   // Page-level scroll choreography: the [data-reveal] lift batch + nav frosting.
@@ -63,39 +80,68 @@ export default function App() {
       <div className="grain" aria-hidden="true" />
 
       <nav className="nav" aria-label="Primary">
-        <a className="nav__brand" href="#top">
+        <a className="nav__brand" href="#top" onClick={closeMenu}>
           <b>A&amp;P</b>
           <span>DIGITAL</span>
         </a>
-        <div className="nav__links">
-          <a href="#how">{t('nav.process')}</a>
-          <a href="#work">{t('nav.work')}</a>
-          <a href="#faq">{t('nav.faq')}</a>
-        </div>
-        <div className="nav__lang" role="group" aria-label={t('nav.langLabel')}>
-          <button
-            type="button"
-            className={`nav__lang-opt${lang === 'en' ? ' is-active' : ''}`}
-            onClick={() => i18n.changeLanguage('en')}
-            aria-pressed={lang === 'en'}
-          >
-            EN
-          </button>
-          <span className="nav__lang-sep" aria-hidden="true">
-            /
-          </span>
-          <button
-            type="button"
-            className={`nav__lang-opt${lang === 'bg' ? ' is-active' : ''}`}
-            onClick={() => i18n.changeLanguage('bg')}
-            aria-pressed={lang === 'bg'}
-          >
-            BG
-          </button>
-        </div>
-        <button type="button" className="btn btn--accent btn--sm nav__cta" onClick={openForm}>
-          {t('nav.cta')}
+
+        <button
+          type="button"
+          className={`nav__burger${menuOpen ? ' is-open' : ''}`}
+          aria-label={t('nav.menu')}
+          aria-expanded={menuOpen}
+          aria-controls="nav-menu"
+          onClick={() => setMenuOpen((o) => !o)}
+        >
+          <span />
+          <span />
+          <span />
         </button>
+
+        <div className={`nav__right${menuOpen ? ' is-open' : ''}`} id="nav-menu">
+          <div className="nav__links">
+            <a href="#how" onClick={closeMenu}>
+              {t('nav.process')}
+            </a>
+            <a href="#work" onClick={closeMenu}>
+              {t('nav.work')}
+            </a>
+            <a href="#faq" onClick={closeMenu}>
+              {t('nav.faq')}
+            </a>
+          </div>
+          <div className="nav__lang" role="group" aria-label={t('nav.langLabel')}>
+            <button
+              type="button"
+              className={`nav__lang-opt${lang === 'en' ? ' is-active' : ''}`}
+              onClick={() => i18n.changeLanguage('en')}
+              aria-pressed={lang === 'en'}
+            >
+              EN
+            </button>
+            <span className="nav__lang-sep" aria-hidden="true">
+              /
+            </span>
+            <button
+              type="button"
+              className={`nav__lang-opt${lang === 'bg' ? ' is-active' : ''}`}
+              onClick={() => i18n.changeLanguage('bg')}
+              aria-pressed={lang === 'bg'}
+            >
+              BG
+            </button>
+          </div>
+          <button
+            type="button"
+            className="btn btn--accent btn--sm nav__cta"
+            onClick={() => {
+              closeMenu()
+              openForm()
+            }}
+          >
+            {t('nav.cta')}
+          </button>
+        </div>
       </nav>
 
       <main>
