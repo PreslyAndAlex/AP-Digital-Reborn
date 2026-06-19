@@ -2,27 +2,55 @@
 <html lang="bg">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="theme-color" content="#04060d" />
+
+    <!-- Primary meta. JS swaps these per language at runtime; crawlers index the
+         static Bulgarian copy below. Replace apdigital.com with the real domain
+         once deployed (also in og:url, canonical, sitemap.xml and robots.txt). -->
+    <title>A&amp;P Digital — Уебсайтове, уеб приложения и AI автоматизация</title>
     <meta
       name="description"
-      content="A&P Digital изработва уебсайтове, онлайн магазини, уеб приложения и AI автоматизации. Кажете ни идеята — доставяме за 3–7 дни. Създай с нас."
+      content="A&amp;P Digital изработва уебсайтове, онлайн магазини, уеб приложения и AI автоматизации. Кажете ни идеята — доставяме за 3–7 дни. Създай с нас."
     />
-    <title>A&amp;P Digital — Уебсайтове, уеб приложения и AI автоматизация</title>
+    <meta
+      name="keywords"
+      content="изработка на уебсайтове, уеб дизайн, онлайн магазин, електронна търговия, уеб приложения, AI автоматизация, web design, web development, web apps, Bulgaria, A&amp;P Digital"
+    />
+    <meta name="author" content="A&amp;P Digital" />
+    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1" />
+    <meta name="theme-color" content="#04060d" />
 
-    <!-- Social link previews (og:image deliberately omitted until the brand
-         preview image is designed; add og:url + canonical + sitemap.xml once
-         the final domain is chosen) -->
+    <!-- Canonical -->
+    <link rel="canonical" href="https://www.apdigital.com/" />
+
+    <!-- Icons -->
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="apple-touch-icon" href="/favicon.svg" />
+
+    <!-- Open Graph (Facebook, LinkedIn, Discord, etc.) -->
     <meta property="og:type" content="website" />
-    <meta property="og:site_name" content="A&P Digital" />
-    <meta property="og:title" content="A&P Digital — Уебсайтове, уеб приложения и AI автоматизация" />
+    <meta property="og:site_name" content="A&amp;P Digital" />
+    <meta property="og:title" content="A&amp;P Digital — Уебсайтове, уеб приложения и AI автоматизация" />
     <meta
       property="og:description"
       content="Уебсайтове, онлайн магазини, уеб приложения и AI автоматизации — доставени за 3–7 дни. Създай с нас."
     />
+    <meta property="og:url" content="https://www.apdigital.com/" />
+    <meta property="og:image" content="https://www.apdigital.com/og-image.svg" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="A&amp;P Digital — Create with Us" />
     <meta property="og:locale" content="bg_BG" />
-    <meta name="twitter:card" content="summary" />
+    <meta property="og:locale:alternate" content="en_US" />
+
+    <!-- Twitter / X -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="A&amp;P Digital — Уебсайтове, уеб приложения и AI автоматизация" />
+    <meta
+      name="twitter:description"
+      content="Уебсайтове, онлайн магазини, уеб приложения и AI автоматизации — доставени за 3–7 дни."
+    />
+    <meta name="twitter:image" content="https://www.apdigital.com/og-image.svg" />
 
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -31,22 +59,60 @@
       rel="stylesheet"
     />
 
-    <!-- Structured data: tells search engines who the business is -->
+    <!-- Structured data: the business + the website (FAQ schema is added at
+         runtime from the translated FAQ content). -->
     <script type="application/ld+json">
       {
         "@context": "https://schema.org",
-        "@type": "Organization",
-        "name": "A&P Digital",
-        "description": "Изработка на уебсайтове, онлайн магазини, уеб приложения и AI автоматизации.",
-        "email": "aandpdigitalservices@gmail.com",
-        "telephone": "+359899413431",
-        "areaServed": "BG",
-        "knowsLanguage": ["bg", "en"]
+        "@graph": [
+          {
+            "@type": "ProfessionalService",
+            "@id": "https://www.apdigital.com/#org",
+            "name": "A&P Digital",
+            "url": "https://www.apdigital.com/",
+            "image": "https://www.apdigital.com/og-image.svg",
+            "description": "Изработка на уебсайтове, онлайн магазини, уеб приложения и AI автоматизации. Доставяме за 3–7 дни.",
+            "email": "aandpdigitalservices@gmail.com",
+            "telephone": "+359899413431",
+            "areaServed": "BG",
+            "knowsLanguage": ["bg", "en"],
+            "priceRange": "$$"
+          },
+          {
+            "@type": "WebSite",
+            "@id": "https://www.apdigital.com/#website",
+            "url": "https://www.apdigital.com/",
+            "name": "A&P Digital",
+            "inLanguage": ["bg", "en"],
+            "publisher": { "@id": "https://www.apdigital.com/#org" }
+          }
+        ]
       }
     </script>
   </head>
   <body>
     <div id="root"></div>
+
+    <!-- Fallback for crawlers / users without JavaScript -->
+    <noscript>
+      <div style="max-width:680px;margin:8vh auto;padding:0 1.25rem;font-family:system-ui,'Segoe UI',Inter,sans-serif;line-height:1.6;color:#0c1020">
+        <h1>A&amp;P Digital — Create with Us</h1>
+        <p>
+          We build websites, e-commerce stores, web apps and AI automation —
+          designed and built for everyone, delivered in 3–7 days.
+        </p>
+        <p>
+          Изработваме уебсайтове, онлайн магазини, уеб приложения и AI
+          автоматизации — доставени за 3–7 дни.
+        </p>
+        <p>
+          Email: <a href="mailto:aandpdigitalservices@gmail.com">aandpdigitalservices@gmail.com</a><br />
+          Phone: <a href="tel:+359899413431">089 941 3431</a>
+        </p>
+        <p>Please enable JavaScript to view the full interactive site.</p>
+      </div>
+    </noscript>
+
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

@@ -2,5 +2,5 @@
 User-agent: *
 Allow: /
 
-# TODO once the final domain exists:
-# Sitemap: https://YOUR-DOMAIN/sitemap.xml
+# Replace the domain with the real one once deployed.
+Sitemap: https://www.apdigital.com/sitemap.xml
