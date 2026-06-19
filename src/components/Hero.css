@@ -204,7 +204,9 @@
     position: relative;
     inset: auto;
     width: min(100%, 460px);
-    aspect-ratio: 16 / 9;
+    /* 5:4 crops the dark left margin so the MONITOR (centred at 65% of the
+       source frame) lands in the middle of the box, not the video element. */
+    aspect-ratio: 5 / 4;
     height: auto;
     margin: 0 auto;
     overflow: hidden;
@@ -216,7 +218,8 @@
     width: 100%;
     height: 100%;
     object-fit: cover;
-    object-position: center;
+    /* show the right 70% of the frame ([30%–100%]) → monitor centred */
+    object-position: 100% 50%;
   }
   .hero__tagline {
     order: 3;
