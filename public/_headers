@@ -1,0 +1,12 @@
+# Security headers for STATIC hosting (Netlify / Cloudflare Pages).
+# Vite copies this file to the build root (dist/_headers).
+# If you serve the site via the Express server (npm start) instead, Helmet
+# already sets these — don't apply both, to avoid duplicate/conflicting headers.
+# Keep this CSP in sync with server/index.js and vercel.json.
+/*
+  Content-Security-Policy: default-src 'self'; script-src 'self' https://challenges.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self' https://challenges.cloudflare.com; frame-src https://challenges.cloudflare.com https://*.vercel.app; object-src 'none'; frame-ancestors 'self'; base-uri 'self'; form-action 'self'
+  X-Content-Type-Options: nosniff
+  X-Frame-Options: SAMEORIGIN
+  Referrer-Policy: no-referrer
+  Strict-Transport-Security: max-age=15552000; includeSubDomains
+  Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=(), usb=(), interest-cohort=()

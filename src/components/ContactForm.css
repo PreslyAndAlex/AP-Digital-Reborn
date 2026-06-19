@@ -59,6 +59,11 @@
   color: #ff8080;
 }
 
+/* Cloudflare Turnstile widget slot (reserve height to avoid layout shift) */
+.cform-turnstile {
+  min-height: 65px;
+}
+
 .cform-submit {
   margin-top: 0.4rem;
   width: 100%;

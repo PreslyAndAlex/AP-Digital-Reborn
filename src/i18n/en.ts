@@ -155,6 +155,7 @@ export const en = {
       message: 'Let us know what you need',
       messageLong: 'Your message is too long (max 5000 characters)',
       rate: 'Too many messages sent. Please try again in an hour',
+      captcha: 'Please complete the anti-spam check and try again',
     },
     projectTypes: [
       'Website',

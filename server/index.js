@@ -101,6 +101,34 @@ try {
 }
 const isDisposableDomain = (domain) => disposableDomains.has(String(domain).toLowerCase())
 
+// ---------------------------------------------------------------------------
+// Cloudflare Turnstile (optional anti-spam challenge)
+// ---------------------------------------------------------------------------
+// When TURNSTILE_SECRET is set the contact endpoint requires a valid token;
+// when it's unset the check is skipped, so the form still works out of the box.
+const TURNSTILE_SECRET = process.env.TURNSTILE_SECRET || ''
+const turnstileEnabled = Boolean(TURNSTILE_SECRET)
+
+async function verifyTurnstile(token, ip) {
+  if (!turnstileEnabled) return true // not configured → skip
+  if (!token) return false
+  try {
+    const body = new URLSearchParams({ secret: TURNSTILE_SECRET, response: token })
+    if (ip) body.set('remoteip', ip)
+    const r = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
+      method: 'POST',
+      body,
+    })
+    const data = await r.json()
+    return Boolean(data && data.success)
+  } catch {
+    // Cloudflare unreachable — fail open so a transient outage doesn't drop real
+    // leads (the honeypot + rate limit + validation still apply).
+    console.warn('[turnstile] verify request failed — allowing submission')
+    return true
+  }
+}
+
 // Very small in-memory rate limiter (per IP). Good enough for a single-node
 // deploy; swap for a shared store if you scale horizontally.
 const HITS = new Map()
@@ -130,12 +158,24 @@ setInterval(() => {
 // ---------------------------------------------------------------------------
 const app = express()
 
-// Behind a reverse proxy (Render/Railway/most hosts) trust the first hop so
-// req.ip is the real client address, not the proxy's. Locally there is no
-// proxy, so the X-Forwarded-For header stays untrusted and can't be spoofed
-// to dodge the rate limit. Override with TRUST_PROXY if your setup differs
-// (e.g. TRUST_PROXY=0 when exposing the server directly in production).
-app.set('trust proxy', Number(process.env.TRUST_PROXY ?? (isProd ? 1 : 0)))
+// Trust a SPECIFIC number of proxy hops so req.ip is the real client address
+// (never `true`, which trusts every proxy and lets a client spoof
+// X-Forwarded-For to dodge the rate limit). Defaults: 1 in prod (Render/Railway
+// /most PaaS put one proxy in front), 0 in dev. Set TRUST_PROXY to match your
+// host — e.g. 0 if the Node server is exposed directly, or 2 if a CDN sits in
+// front of a platform proxy.
+const trustProxy = Number.isFinite(Number(process.env.TRUST_PROXY))
+  ? Number(process.env.TRUST_PROXY)
+  : isProd
+    ? 1
+    : 0
+app.set('trust proxy', trustProxy)
+if (isProd && process.env.TRUST_PROXY === undefined) {
+  console.warn(
+    '[security] TRUST_PROXY is not set — defaulting to 1 hop. Set it to match ' +
+      'your deployment so the rate limiter reads the real client IP.',
+  )
+}
 
 // Security headers. The CSP allows exactly what the site uses: self-hosted
 // scripts, inline styles (React/framer-motion), Google Fonts, and https
@@ -145,12 +185,15 @@ app.use(
     contentSecurityPolicy: {
       directives: {
         defaultSrc: ["'self'"],
-        scriptSrc: ["'self'"],
+        // self-hosted bundle + Cloudflare Turnstile (anti-spam) script
+        scriptSrc: ["'self'", 'https://challenges.cloudflare.com'],
         styleSrc: ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com'],
         fontSrc: ["'self'", 'https://fonts.gstatic.com'],
         imgSrc: ["'self'", 'data:'],
-        connectSrc: ["'self'"],
-        frameSrc: ['https:'],
+        connectSrc: ["'self'", 'https://challenges.cloudflare.com'],
+        // Only what we actually frame: Turnstile + the live demo previews.
+        // Add a demo's host here if you embed one served from another domain.
+        frameSrc: ['https://challenges.cloudflare.com', 'https://*.vercel.app'],
         objectSrc: ["'none'"],
         frameAncestors: ["'self'"],
         baseUri: ["'self'"],
@@ -159,6 +202,16 @@ app.use(
     },
   }),
 )
+
+// Permissions-Policy: switch off powerful browser features the site never uses.
+// Helmet doesn't set this header, so add it explicitly.
+app.use((_req, res, next) => {
+  res.setHeader(
+    'Permissions-Policy',
+    'camera=(), microphone=(), geolocation=(), payment=(), usb=(), interest-cohort=()',
+  )
+  next()
+})
 
 app.use(express.json({ limit: '32kb' }))
 
@@ -170,7 +223,8 @@ if (!isProd) app.use(cors())
 else if (process.env.ALLOWED_ORIGIN) app.use(cors({ origin: process.env.ALLOWED_ORIGIN }))
 
 app.get('/api/health', (_req, res) => {
-  res.json({ ok: true, mail: hasSmtp ? 'smtp' : 'dev-json' })
+  // Keep this minimal — don't reveal mail/config state to the public.
+  res.json({ ok: true })
 })
 
 app.post('/api/contact', async (req, res) => {
@@ -219,6 +273,13 @@ app.post('/api/contact', async (req, res) => {
 
   if (Object.keys(errors).length) {
     return res.status(400).json({ ok: false, errors })
+  }
+
+  // Anti-spam challenge (no-op unless Turnstile is configured). Checked after
+  // field validation so a simple typo doesn't burn the single-use token.
+  const captchaOk = await verifyTurnstile(clean(req.body?.turnstileToken, 4000), req.ip)
+  if (!captchaOk) {
+    return res.status(403).json({ ok: false, error: 'captcha' })
   }
 
   const subject = `New project enquiry — ${name}`

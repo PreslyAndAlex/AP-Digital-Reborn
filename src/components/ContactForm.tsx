@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from 'react'
 import { useTranslation } from 'react-i18next'
 import Select from './Select'
+import { useTurnstile } from '../lib/useTurnstile'
 import './ContactForm.css'
 
 type FieldErrors = Partial<Record<'name' | 'email' | 'phone' | 'message', string>>
@@ -84,6 +85,10 @@ export default function ContactForm() {
   const [typeIndex, setTypeIndex] = useState(0)
   const projectType = projectTypes[typeIndex] ?? projectTypes[0]
 
+  // Optional Cloudflare Turnstile anti-spam — active only when a site key is set.
+  const turnstileSiteKey = import.meta.env.VITE_TURNSTILE_SITE_KEY as string | undefined
+  const turnstile = useTurnstile(turnstileSiteKey)
+
   // Turn the server's error codes into the matching localized messages. The
   // server is the source of truth for checks the client can't do (e.g. whether
   // the email domain can actually receive mail).
@@ -143,6 +148,12 @@ export default function ContactForm() {
     setErrors(next)
     if (Object.keys(next).length > 0) return
 
+    // require the anti-spam challenge when it's enabled
+    if (turnstile.enabled && !turnstile.token) {
+      setFormError(t('contact.errors.captcha'))
+      return
+    }
+
     setSending(true)
     try {
       const res = await fetch('/api/contact', {
@@ -155,6 +166,7 @@ export default function ContactForm() {
           projectType,
           message,
           website,
+          turnstileToken: turnstile.token,
           lang: i18n.language,
         }),
       })
@@ -162,6 +174,13 @@ export default function ContactForm() {
       // rate limited
       if (res.status === 429) {
         setFormError(t('contact.errors.rate'))
+        return
+      }
+
+      // anti-spam challenge failed/expired — refresh it for another try
+      if (res.status === 403) {
+        setFormError(t('contact.errors.captcha'))
+        turnstile.reset()
         return
       }
 
@@ -182,8 +201,10 @@ export default function ContactForm() {
       }
 
       setFormError(t('contact.form.error'))
+      turnstile.reset()
     } catch {
       setFormError(t('contact.form.error'))
+      turnstile.reset()
     } finally {
       setSending(false)
     }
@@ -245,6 +266,8 @@ export default function ContactForm() {
         <textarea id="message" name="message" rows={4} placeholder={t('contact.form.detailsPh')} />
         {errors.message && <span className="cform-error">{errors.message}</span>}
       </div>
+
+      {turnstile.enabled && <div className="cform-turnstile" ref={turnstile.containerRef} />}
 
       <button className="btn btn--accent cform-submit" type="submit" disabled={sending}>
         {sending ? t('contact.form.sending') : t('contact.form.send')}

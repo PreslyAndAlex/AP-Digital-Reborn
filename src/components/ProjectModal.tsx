@@ -103,6 +103,8 @@ export default function ProjectModal({ project, catLabel, onClose }: Props) {
               src={project.href}
               title={project.title}
               loading="lazy"
+              referrerPolicy="no-referrer"
+              sandbox="allow-scripts allow-same-origin allow-popups allow-forms"
             />
           ) : (
             <div
