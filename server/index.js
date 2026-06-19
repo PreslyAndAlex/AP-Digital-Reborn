@@ -12,6 +12,7 @@ import cors from 'cors'
 import helmet from 'helmet'
 import nodemailer from 'nodemailer'
 import { promises as dnsp } from 'node:dns'
+import { createRequire } from 'node:module'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const ROOT = path.resolve(__dirname, '..')
@@ -86,6 +87,19 @@ async function domainHasMx(domain) {
     return false
   }
 }
+
+// Disposable / throwaway email domains — a maintained offline list (~120k),
+// loaded once into a Set for O(1) lookups. Purely local, no network call.
+const require = createRequire(import.meta.url)
+let disposableDomains = new Set()
+try {
+  disposableDomains = new Set(
+    require('disposable-email-domains').map((d) => String(d).toLowerCase()),
+  )
+} catch {
+  // list package unavailable — skip this check rather than break the form
+}
+const isDisposableDomain = (domain) => disposableDomains.has(String(domain).toLowerCase())
 
 // Very small in-memory rate limiter (per IP). Good enough for a single-node
 // deploy; swap for a shared store if you scale horizontally.
@@ -190,14 +204,18 @@ app.post('/api/contact', async (req, res) => {
 
   if (!email) errors.email = 'required'
   else if (!emailRe.test(email)) errors.email = 'invalid'
-  // domain must be real and able to receive mail (MX records present)
-  else if (!(await domainHasMx(email.split('@')[1]))) errors.email = 'domain'
+  else {
+    const domain = email.split('@')[1].toLowerCase()
+    // reject throwaway addresses, then require a domain that can receive mail
+    if (isDisposableDomain(domain)) errors.email = 'disposable'
+    else if (!(await domainHasMx(domain))) errors.email = 'domain'
+  }
 
   // phone is optional; validate only when one was provided
   if (phone && !bgPhoneRe.test(normalizePhone(phone))) errors.phone = 'invalid'
 
-  if (!messageRaw) errors.message = 'required'
-  else if (messageRaw.length > MESSAGE_MAX) errors.message = 'too_long'
+  // message is optional — only flag it if it runs over the limit
+  if (messageRaw.length > MESSAGE_MAX) errors.message = 'too_long'
 
   if (Object.keys(errors).length) {
     return res.status(400).json({ ok: false, errors })

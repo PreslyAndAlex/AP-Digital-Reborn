@@ -15,11 +15,69 @@ const MESSAGE_MAX = 5000
 
 const normalizePhone = (p: string) => p.replace(/[\s\-().]/g, '')
 
+// Popular providers used to catch obvious email typos (incl. BG webmail).
+const POPULAR_DOMAINS = [
+  'gmail.com',
+  'yahoo.com',
+  'yahoo.co.uk',
+  'hotmail.com',
+  'outlook.com',
+  'live.com',
+  'msn.com',
+  'icloud.com',
+  'aol.com',
+  'proton.me',
+  'protonmail.com',
+  'yandex.com',
+  'abv.bg',
+  'mail.bg',
+  'dir.bg',
+]
+
+function levenshtein(a: string, b: string): number {
+  const m = a.length
+  const n = b.length
+  if (!m) return n
+  if (!n) return m
+  let prev = Array.from({ length: n + 1 }, (_, j) => j)
+  for (let i = 1; i <= m; i++) {
+    const curr = [i]
+    for (let j = 1; j <= n; j++) {
+      const cost = a[i - 1] === b[j - 1] ? 0 : 1
+      curr[j] = Math.min(prev[j] + 1, curr[j - 1] + 1, prev[j - 1] + cost)
+    }
+    prev = curr
+  }
+  return prev[n]
+}
+
+// If the email's domain is a close miss of a popular one, suggest the fix.
+function suggestEmail(email: string): string | null {
+  const at = email.lastIndexOf('@')
+  if (at < 1) return null
+  const local = email.slice(0, at)
+  const domain = email.slice(at + 1).toLowerCase()
+  if (!domain || POPULAR_DOMAINS.includes(domain)) return null
+  let best: string | null = null
+  let bestDist = Infinity
+  for (const d of POPULAR_DOMAINS) {
+    const dist = levenshtein(domain, d)
+    if (dist < bestDist) {
+      bestDist = dist
+      best = d
+    }
+  }
+  // only a 1–2 character miss — avoids flagging unrelated domains
+  return best && bestDist >= 1 && bestDist <= 2 ? `${local}@${best}` : null
+}
+
 export default function ContactForm() {
   const { t, i18n } = useTranslation()
   const projectTypes = t('contact.projectTypes', { returnObjects: true }) as string[]
   const [errors, setErrors] = useState<FieldErrors>({})
   const [formError, setFormError] = useState<string | null>(null)
+  // remembers an email we already warned about (typo) so a re-submit goes through
+  const [typoWarnedEmail, setTypoWarnedEmail] = useState<string | null>(null)
   const [sent, setSent] = useState(false)
   const [sending, setSending] = useState(false)
   // track the selection by index so it survives a language switch
@@ -36,9 +94,11 @@ export default function ContactForm() {
       out.email =
         e.email === 'domain'
           ? t('contact.errors.emailDomain')
-          : e.email === 'invalid'
-            ? t('contact.errors.emailBad')
-            : t('contact.errors.email')
+          : e.email === 'disposable'
+            ? t('contact.errors.emailDisposable')
+            : e.email === 'invalid'
+              ? t('contact.errors.emailBad')
+              : t('contact.errors.email')
     if (e.phone) out.phone = t('contact.errors.phone')
     if (e.message)
       out.message =
@@ -65,12 +125,20 @@ export default function ContactForm() {
 
     if (!email) next.email = t('contact.errors.email')
     else if (!emailRe.test(email)) next.email = t('contact.errors.emailBad')
+    else {
+      // soft typo warning — shows once; submitting the same email again proceeds
+      const suggestion = suggestEmail(email)
+      if (suggestion && typoWarnedEmail !== email) {
+        next.email = t('contact.errors.emailTypo', { suggestion })
+        setTypoWarnedEmail(email)
+      }
+    }
 
     // phone is optional, but if given it must be a valid Bulgarian number
     if (phone && !bgPhoneRe.test(normalizePhone(phone))) next.phone = t('contact.errors.phone')
 
-    if (!message) next.message = t('contact.errors.message')
-    else if (message.length > MESSAGE_MAX) next.message = t('contact.errors.messageLong')
+    // message is optional — only flag it if it runs over the limit
+    if (message.length > MESSAGE_MAX) next.message = t('contact.errors.messageLong')
 
     setErrors(next)
     if (Object.keys(next).length > 0) return
