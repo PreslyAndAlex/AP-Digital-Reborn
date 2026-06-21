@@ -30,6 +30,15 @@ export default function Select({ name, options, value, onChange, labelId }: Sele
     return () => document.removeEventListener('mousedown', onDocClick)
   }, [open])
 
+  // Re-sync the keyboard cursor to the current value whenever the menu opens, so
+  // it can't drift out of step after the option list changes (e.g. a language
+  // switch replaces `options` while this component stays mounted).
+  useEffect(() => {
+    if (open) setActive(Math.max(0, options.indexOf(value)))
+    // `options` identity changes every render; keying on `open` is intentional.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open])
+
   const choose = (opt: string) => {
     onChange(opt)
     setOpen(false)

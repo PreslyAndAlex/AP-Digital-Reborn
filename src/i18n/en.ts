@@ -182,6 +182,43 @@ export const en = {
     },
     rights: '© {{year}} A&P Digital',
     tagline: 'Made with care in Bulgaria.',
+    privacy: 'Privacy Notice',
+  },
+  privacy: {
+    title: 'Privacy Notice',
+    intro:
+      'We are committed to protecting your privacy. This notice explains what information is collected when you use our contact form and how it is handled.',
+    collectTitle: 'What we collect',
+    collectItems: [
+      'Your name',
+      'Your email address',
+      'Your phone number (optional)',
+      'Your project type (optional)',
+      'A message describing your project (optional)',
+    ],
+    useTitle: 'How we use your information',
+    useBody:
+      'Your submission is forwarded to us by email and used solely to respond to your inquiry. We do not store form data in any database or on third-party platforms.',
+    emailPhoneTitle: 'Email address & phone number',
+    emailPhoneHighlight:
+      'We do not collect or retain your email address or phone number.',
+    emailPhoneBody:
+      'They are processed automatically only to deliver your inquiry to us and are not stored after the message is sent.',
+    spamTitle: 'Spam prevention',
+    spamBody:
+      'Your IP address is temporarily checked against a rate limit to prevent automated spam submissions. It is not stored, linked to your inquiry, or used for any other purpose.',
+    turnstileTitle: 'Cloudflare Turnstile',
+    turnstileBody:
+      'Our contact form uses Cloudflare Turnstile to protect against spam. Turnstile may process browser and device information to verify you are human. Learn more at',
+    cookiesTitle: 'Cookies & tracking',
+    cookiesBody:
+      'We do not use tracking cookies, analytics services, or advertising networks on this website.',
+    gdprTitle: 'Legal basis (GDPR)',
+    gdprBody:
+      'Processing your inquiry is based on your consent (Art. 6(1)(a) GDPR). Spam prevention via IP rate-limiting is based on our legitimate interests (Art. 6(1)(f) GDPR).',
+    contactTitle: 'Privacy questions',
+    contactBody: 'For privacy-related questions, reach us at',
+    updated: 'Last updated: June 2026',
   },
 }
 

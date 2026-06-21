@@ -35,6 +35,10 @@ const transporter = hasSmtp
       // true for 465 (implicit TLS), false for 587/25 (STARTTLS)
       secure: String(process.env.SMTP_SECURE ?? (Number(process.env.SMTP_PORT) === 465)) === 'true',
       auth: { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS },
+      // Hard timeouts so a slow/hung mail server can't pin a request worker open.
+      connectionTimeout: 10_000, // TCP connect
+      greetingTimeout: 10_000, // wait for the SMTP greeting banner
+      socketTimeout: 20_000, // inactivity once connected
     })
   : nodemailer.createTransport({ jsonTransport: true })
 
@@ -60,6 +64,7 @@ const escapeHtml = (s = '') =>
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;')
 
 // Trim + cap length to keep payloads sane.
 const clean = (v, max = 5000) => String(v ?? '').trim().slice(0, max)
@@ -76,16 +81,37 @@ const MESSAGE_MAX = 5000
 const bgPhoneRe = /^(?:\+359|0)[1-9]\d{7,8}$/
 const normalizePhone = (v) => String(v).replace(/[\s\-().]/g, '')
 
+// Resolve `promise`, but if it hasn't settled within `ms` resolve to
+// `timeoutValue` instead. Keeps a slow/hanging upstream (DNS, Cloudflare) from
+// pinning a request worker open — the concrete "intentional lag" DoS vector.
+const withTimeout = (promise, ms, timeoutValue) =>
+  new Promise((resolve) => {
+    const timer = setTimeout(() => resolve(timeoutValue), ms)
+    Promise.resolve(promise).then(
+      (v) => {
+        clearTimeout(timer)
+        resolve(v)
+      },
+      () => {
+        clearTimeout(timer)
+        resolve(timeoutValue)
+      },
+    )
+  })
+
+const DNS_TIMEOUT_MS = 3000
+
 // Does the email's domain actually accept mail? An MX lookup catches typos and
 // made-up domains (e.g. "gmial.com", "example.xyz") that pass a format check.
 async function domainHasMx(domain) {
   if (!domain) return false
-  try {
-    const mx = await dnsp.resolveMx(domain)
-    return Array.isArray(mx) && mx.length > 0
-  } catch {
-    return false
-  }
+  // No records / NXDOMAIN → not deliverable (false). On a DNS *timeout* we skip
+  // the check (true) rather than reject a real lead over a transient resolver hiccup.
+  const lookup = dnsp
+    .resolveMx(domain)
+    .then((mx) => Array.isArray(mx) && mx.length > 0)
+    .catch(() => false)
+  return withTimeout(lookup, DNS_TIMEOUT_MS, true)
 }
 
 // Disposable / throwaway email domains — a maintained offline list (~120k),
@@ -108,38 +134,87 @@ const isDisposableDomain = (domain) => disposableDomains.has(String(domain).toLo
 // when it's unset the check is skipped, so the form still works out of the box.
 const TURNSTILE_SECRET = process.env.TURNSTILE_SECRET || ''
 const turnstileEnabled = Boolean(TURNSTILE_SECRET)
+// When true, an unreachable/timed-out Cloudflare causes the submission to be
+// rejected (fail closed) instead of allowed. Recommended in production once
+// Turnstile is configured. Default: fail open (don't drop leads on a CF outage).
+const TURNSTILE_REQUIRED = String(process.env.TURNSTILE_REQUIRED).toLowerCase() === 'true'
+const TURNSTILE_TIMEOUT_MS = 4000
+
+if (TURNSTILE_REQUIRED && !turnstileEnabled) {
+  console.warn(
+    '[security] TURNSTILE_REQUIRED=true but TURNSTILE_SECRET is unset — the CAPTCHA ' +
+      'cannot be enforced. Set TURNSTILE_SECRET (and VITE_TURNSTILE_SITE_KEY) to enable it.',
+  )
+}
 
 async function verifyTurnstile(token, ip) {
   if (!turnstileEnabled) return true // not configured → skip
   if (!token) return false
+  // Abort the siteverify call if Cloudflare doesn't answer promptly.
+  const controller = new AbortController()
+  const timer = setTimeout(() => controller.abort(), TURNSTILE_TIMEOUT_MS)
   try {
     const body = new URLSearchParams({ secret: TURNSTILE_SECRET, response: token })
     if (ip) body.set('remoteip', ip)
     const r = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
       method: 'POST',
       body,
+      signal: controller.signal,
     })
     const data = await r.json()
     return Boolean(data && data.success)
   } catch {
-    // Cloudflare unreachable — fail open so a transient outage doesn't drop real
-    // leads (the honeypot + rate limit + validation still apply).
+    // Cloudflare unreachable or timed out. Fail closed when TURNSTILE_REQUIRED is
+    // set; otherwise fail open so a transient outage doesn't drop real leads
+    // (honeypot + per-IP/global rate limits + validation still apply).
+    if (TURNSTILE_REQUIRED) {
+      console.warn('[turnstile] verify failed — rejecting (TURNSTILE_REQUIRED=true)')
+      return false
+    }
     console.warn('[turnstile] verify request failed — allowing submission')
     return true
+  } finally {
+    clearTimeout(timer)
   }
 }
 
 // Very small in-memory rate limiter (per IP). Good enough for a single-node
-// deploy; swap for a shared store if you scale horizontally.
+// deploy; swap for a shared store (e.g. Redis) if you scale horizontally.
 const HITS = new Map()
 const WINDOW_MS = 60 * 60 * 1000 // 1 hour
 const MAX_HITS = 5 // max submissions per IP per window
+// Global backstop on actual emails across ALL IPs in the window. Stops a botnet
+// that rotates IPs (which defeats the per-IP limit) from flooding the inbox or
+// burning the SMTP quota. Floored at 1 so a stray MAX_GLOBAL=0 can't lock the
+// form. Tune via MAX_GLOBAL; default 50/hr.
+const MAX_GLOBAL = Math.max(
+  1,
+  Number.isFinite(Number(process.env.MAX_GLOBAL)) ? Number(process.env.MAX_GLOBAL) : 50,
+)
+const GLOBAL_HITS = [] // timestamps of accepted submissions (emails) in the window
+
+// Per IP: counts every attempt (incl. invalid/honeypot) so probing one IP still
+// burns its budget. Checks BEFORE recording, so a blocked request can't keep
+// pushing the window forward.
 function rateLimited(ip) {
   const now = Date.now()
   const arr = (HITS.get(ip) || []).filter((t) => now - t < WINDOW_MS)
-  arr.push(now)
   HITS.set(ip, arr)
-  return arr.length > MAX_HITS
+  if (arr.length >= MAX_HITS) return true
+  arr.push(now)
+  return false
+}
+// Global: only counts submissions that actually reach the send step, so a flood
+// of invalid/honeypot junk can't exhaust the ceiling and lock out real leads.
+// Timestamps are appended in order, so expired ones sit at the front.
+function globalRateLimited() {
+  const now = Date.now()
+  let expired = 0
+  while (expired < GLOBAL_HITS.length && now - GLOBAL_HITS[expired] >= WINDOW_MS) expired++
+  if (expired) GLOBAL_HITS.splice(0, expired)
+  if (GLOBAL_HITS.length >= MAX_GLOBAL) return true
+  GLOBAL_HITS.push(now)
+  return false
 }
 
 // Sweep expired entries so the map can't grow without bound under a bot that
@@ -231,7 +306,10 @@ app.post('/api/contact', async (req, res) => {
   // req.ip honours the trust-proxy setting above: the real client IP behind a
   // configured proxy, the socket address otherwise. Never the raw header.
   if (rateLimited(req.ip)) {
-    return res.status(429).json({ ok: false, error: 'too_many_requests' })
+    return res
+      .status(429)
+      .set('Retry-After', String(WINDOW_MS / 1000))
+      .json({ ok: false, error: 'too_many_requests' })
   }
 
   // Honeypot: the "website" field is invisible to humans (hidden in CSS) but
@@ -257,9 +335,12 @@ app.post('/api/contact', async (req, res) => {
   else if (name.length > NAME_MAX) errors.name = 'too_long'
 
   if (!email) errors.email = 'required'
-  else if (!emailRe.test(email)) errors.email = 'invalid'
+  // Reject the format check AND any address-injection chars that the loose regex
+  // would otherwise allow into the reply-to header (< > " , ; \). Real addresses
+  // never contain them; this keeps a crafted value from smuggling a second address.
+  else if (!emailRe.test(email) || /[<>",;\\]/.test(email)) errors.email = 'invalid'
   else {
-    const domain = email.split('@')[1].toLowerCase()
+    const domain = email.slice(email.lastIndexOf('@') + 1).toLowerCase()
     // reject throwaway addresses, then require a domain that can receive mail
     if (isDisposableDomain(domain)) errors.email = 'disposable'
     else if (!(await domainHasMx(domain))) errors.email = 'domain'
@@ -280,6 +361,15 @@ app.post('/api/contact', async (req, res) => {
   const captchaOk = await verifyTurnstile(clean(req.body?.turnstileToken, 4000), req.ip)
   if (!captchaOk) {
     return res.status(403).json({ ok: false, error: 'captcha' })
+  }
+
+  // Global send ceiling — checked last so it only counts real, validated,
+  // captcha-passed submissions (an email is about to go out).
+  if (globalRateLimited()) {
+    return res
+      .status(429)
+      .set('Retry-After', String(WINDOW_MS / 1000))
+      .json({ ok: false, error: 'too_many_requests' })
   }
 
   const subject = `New project enquiry — ${name}`

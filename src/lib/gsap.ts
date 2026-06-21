@@ -29,6 +29,17 @@ export const reduceMotion =
  * independently. Words listed (comma-separated) in `data-accent` get the
  * extra `w--accent` class. Mirrors the Haldane scrub splitter.
  */
+// Escape the few HTML-significant chars before interpolating a word back into
+// innerHTML. The source is trusted static copy today, but this keeps the helper
+// safe if it's ever pointed at user-derived text.
+const escapeHtml = (s: string): string =>
+  s
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;')
+
 export function splitScrub(el: HTMLElement): HTMLElement[] {
   const accents = new Set(
     (el.dataset.accent ?? '')
@@ -40,7 +51,7 @@ export function splitScrub(el: HTMLElement): HTMLElement[] {
   el.innerHTML = words
     .map((w) => {
       const bare = w.replace(/[^\p{L}]/gu, '').toLowerCase()
-      return `<span class="w${accents.has(bare) ? ' w--accent' : ''}">${w}</span>`
+      return `<span class="w${accents.has(bare) ? ' w--accent' : ''}">${escapeHtml(w)}</span>`
     })
     .join(' ')
   return Array.from(el.querySelectorAll<HTMLElement>('.w'))

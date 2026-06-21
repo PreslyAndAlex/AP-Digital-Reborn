@@ -17,6 +17,10 @@ const transporter = nodemailer.createTransport({
   port,
   secure: String(process.env.SMTP_SECURE ?? (port === 465)) === 'true',
   auth: { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS },
+  // Don't hang the operator if the SMTP server is slow/unreachable.
+  connectionTimeout: 10_000,
+  greetingTimeout: 10_000,
+  socketTimeout: 20_000,
 })
 
 try {
@@ -32,5 +36,6 @@ try {
   console.log('  • For Gmail, SMTP_PASS must be a 16-char App Password (myaccount.google.com/apppasswords),')
   console.log('    not your normal Google password. 2-Step Verification must be on.')
   console.log('  • SMTP_USER / CONTACT_FROM should be your full Gmail address.')
+  process.exit(1) // surface the failure to the shell / CI
 }
 process.exit(0)

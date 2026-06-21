@@ -8,6 +8,7 @@ import Scrub from './components/Scrub'
 import FAQ from './components/FAQ'
 import Contact from './components/Contact'
 import FormModal from './components/FormModal'
+import PrivacyModal from './components/PrivacyModal'
 import { gsap, ScrollTrigger, useGSAP, reduceMotion } from './lib/gsap'
 import './App.css'
 
@@ -15,6 +16,7 @@ export default function App() {
   const { t, i18n } = useTranslation()
   const lang = i18n.language === 'bg' ? 'bg' : 'en'
   const [formOpen, setFormOpen] = useState(false)
+  const [privacyOpen, setPrivacyOpen] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
   const closeMenu = () => setMenuOpen(false)
 
@@ -70,6 +72,7 @@ export default function App() {
   })
 
   const openForm = () => setFormOpen(true)
+  const openPrivacy = () => setPrivacyOpen(true)
   const year = new Date().getFullYear()
 
   return (
@@ -197,11 +200,16 @@ export default function App() {
             <span className="footer__credit">{t('footer.rights', { year })}</span>
             <span className="footer__dot" aria-hidden="true" />
             <span>{t('footer.tagline')}</span>
+            <span className="footer__dot" aria-hidden="true" />
+            <button type="button" className="footer__link" onClick={openPrivacy}>
+              {t('footer.privacy')}
+            </button>
           </div>
         </div>
       </footer>
 
       <AnimatePresence>{formOpen && <FormModal onClose={() => setFormOpen(false)} />}</AnimatePresence>
+      <AnimatePresence>{privacyOpen && <PrivacyModal onClose={() => setPrivacyOpen(false)} />}</AnimatePresence>
     </>
   )
 }
