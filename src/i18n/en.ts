@@ -76,6 +76,7 @@ export const en = {
     openLive: 'Open live',
     close: 'Close',
     demoSoon: 'Live demo coming soon',
+    noEmbed: 'This site blocks in-page previews — open it live to explore',
   },
   scrub: {
     text: 'We turn ideas into sites that feel alive — designed, built and shipped in days, not months.',

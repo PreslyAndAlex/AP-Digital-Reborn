@@ -13,13 +13,16 @@ type Props = {
 const ease = [0.22, 1, 0.36, 1] as const
 
 /**
- * A large, near-full-bleed preview of a project. When the project links to a
- * real hosted URL the live site is embedded in an interactive <iframe>; demo
- * placeholders show the card artwork with a "coming soon" note instead.
+ * A large, near-full-bleed preview of a project. Real hosted URLs are embedded
+ * in an interactive <iframe>, unless the site sends frame-blocking headers
+ * (`noEmbed`), in which case the screenshot is shown with an "Open Live" link.
+ * Demo placeholders without a real URL show the card artwork with a "coming
+ * soon" note instead.
  */
 export default function ProjectModal({ project, catLabel, onClose }: Props) {
   const { t } = useTranslation()
   const isLive = /^https?:\/\//i.test(project.href)
+  const canEmbed = isLive && !project.noEmbed
 
   // Close on Escape and lock background scroll while open.
   useEffect(() => {
@@ -97,7 +100,7 @@ export default function ProjectModal({ project, catLabel, onClose }: Props) {
         </header>
 
         <div className="pm-body">
-          {isLive ? (
+          {canEmbed ? (
             <iframe
               className="pm-frame"
               src={project.href}
@@ -106,6 +109,33 @@ export default function ProjectModal({ project, catLabel, onClose }: Props) {
               referrerPolicy="no-referrer"
               sandbox="allow-scripts allow-same-origin allow-popups allow-forms"
             />
+          ) : isLive ? (
+            <a
+              className="pm-placeholder pm-placeholder--live"
+              href={project.href}
+              target="_blank"
+              rel="noreferrer"
+              aria-label={`${project.title} — ${t('examples.noEmbed')}`}
+              style={
+                project.image
+                  ? { backgroundImage: `url(${project.image})` }
+                  : { backgroundImage: project.gradient }
+              }
+            >
+              <span className="pm-noembed">
+                {t('examples.noEmbed')}
+                <svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true">
+                  <path
+                    d="M7 17 17 7M9 7h8v8"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+              </span>
+            </a>
           ) : (
             <div
               className="pm-placeholder"

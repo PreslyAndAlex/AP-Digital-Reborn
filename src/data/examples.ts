@@ -15,6 +15,8 @@ export type Project = {
    * placeholder is replaced automatically. Drop files in /public/images.
    */
   image?: string
+  /** Site sends X-Frame-Options/CSP that blocks iframes — show the screenshot in the modal instead of embedding. */
+  noEmbed?: boolean
 }
 
 export const categories: Array<'All' | Category> = [
@@ -26,14 +28,6 @@ export const categories: Array<'All' | Category> = [
 
 export const projects: Project[] = [
   {
-    id: 'meridian',
-    title: 'Meridian Capital',
-    category: 'Web Apps',
-    domain: 'meridiancapital.io',
-    href: '#',
-    gradient: 'linear-gradient(135deg, #060e20 0%, #0d2040 50%, #0a1830 100%)',
-  },
-  {
     id: 'yourbrand',
     title: 'YourBrand Studio',
     category: 'Web Design',
@@ -43,35 +37,39 @@ export const projects: Project[] = [
     image: '/images/yourbrand.jpg',
   },
   {
-    id: 'apex',
-    title: 'Apex Commerce',
-    category: 'E-Commerce',
-    domain: 'apexcommerce.shop',
-    href: '#',
-    gradient: 'linear-gradient(135deg, #150820 0%, #220d38 50%, #180a30 100%)',
-  },
-  {
-    id: 'orbit',
-    title: 'Orbit SaaS',
-    category: 'Web Apps',
-    domain: 'orbitapp.io',
-    href: '#',
-    gradient: 'linear-gradient(135deg, #080e28 0%, #102040 55%, #0c1830 100%)',
-  },
-  {
-    id: 'bloom',
-    title: 'Bloom Beauty',
-    category: 'E-Commerce',
-    domain: 'bloombeauty.com',
-    href: '#',
-    gradient: 'linear-gradient(135deg, #180820 0%, #280d30 55%, #1c0a28 100%)',
-  },
-  {
-    id: 'nova',
-    title: 'Nova Landing',
+    id: 'veridian',
+    title: 'Veridian & Partners',
     category: 'Web Design',
-    domain: 'novastartup.io',
-    href: '#',
-    gradient: 'linear-gradient(135deg, #060e22 0%, #0e1a40 55%, #091530 100%)',
+    domain: 'lawyer-site-viewonly.vercel.app',
+    href: 'https://lawyer-site-viewonly.vercel.app/en',
+    gradient: 'linear-gradient(135deg, #0d0a20 0%, #1c1238 50%, #120c28 100%)',
+    image: '/images/veridian.jpg',
+  },
+  {
+    id: 'studio-construction',
+    title: 'Studio Construction',
+    category: 'Web Design',
+    domain: 'studio-construction.vercel.app',
+    href: 'https://studio-construction.vercel.app/',
+    gradient: 'linear-gradient(135deg, #100a1c 0%, #201236 50%, #160c26 100%)',
+    image: '/images/studio-construction.jpg',
+  },
+  {
+    id: 'lumiere',
+    title: 'Lumière',
+    category: 'Web Design',
+    domain: 'lumiere-mocha.vercel.app',
+    href: 'https://lumiere-mocha.vercel.app/',
+    gradient: 'linear-gradient(135deg, #160a20 0%, #2a1238 50%, #1c0c2a 100%)',
+    image: '/images/lumiere.jpg',
+  },
+  {
+    id: 'aurora',
+    title: 'Aurora Coffee Roasters',
+    category: 'E-Commerce',
+    domain: 'aurora-phi-wine.vercel.app',
+    href: 'https://aurora-phi-wine.vercel.app/',
+    gradient: 'linear-gradient(135deg, #200a18 0%, #380d28 50%, #28081c 100%)',
+    image: '/images/aurora.jpg',
   },
 ]
