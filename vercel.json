@@ -1,6 +1,5 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "//": "Security headers for STATIC hosting on Vercel. If you serve the site via the Express server (npm start), Helmet already sets these — don't apply both. Keep this CSP in sync with server/index.js.",
   "headers": [
     {
       "source": "/(.*)",
