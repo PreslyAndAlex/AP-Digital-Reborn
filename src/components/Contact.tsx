@@ -63,6 +63,7 @@ export default function Contact({ onStart }: ContactProps) {
           <li>
             <span className="contact-details-k">{t('contact.details.phoneLabel')}</span>
             <a href="tel:+359899413431">089 941 3431</a>
+            <a href="tel:+359888358112">088 835 8112</a>
           </li>
         </ul>
 

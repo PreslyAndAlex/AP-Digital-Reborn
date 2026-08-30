@@ -190,6 +190,7 @@ export default function App() {
               <h4>{t('footer.contact')}</h4>
               <a href="mailto:aandpdigitalservices@gmail.com">aandpdigitalservices@gmail.com</a>
               <a href="tel:+359899413431">089 941 3431</a>
+              <a href="tel:+359888358112">088 835 8112</a>
               <button type="button" className="footer__link footer__link--accent" onClick={openForm}>
                 {t('nav.cta')}
               </button>
