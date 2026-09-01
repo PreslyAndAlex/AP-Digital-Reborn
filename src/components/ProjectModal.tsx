@@ -67,7 +67,7 @@ export default function ProjectModal({ project, catLabel, onClose }: Props) {
           <span className="pm-url">{project.domain}</span>
           <div className="pm-meta">
             <span className="pm-title">{project.title}</span>
-            <span className="pm-cat">{catLabel(project.category)}</span>
+            <span className="pm-cat">{project.categories.map(catLabel).join(' · ')}</span>
           </div>
           <div className="pm-actions">
             {isLive && (

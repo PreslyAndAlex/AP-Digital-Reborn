@@ -10,7 +10,7 @@ const ease = [0.22, 1, 0.36, 1] as const
 // canonical category key -> translation key
 const catKey: Record<string, string> = {
   All: 'all',
-  'Web Apps': 'webApps',
+  'AI Automation': 'ai',
   'Web Design': 'webDesign',
   'E-Commerce': 'ecommerce',
 }
@@ -18,11 +18,14 @@ const catKey: Record<string, string> = {
 export default function Examples() {
   const { t } = useTranslation()
   const catLabel = (c: string) => t(`examples.categories.${catKey[c]}`)
+  // a project can carry several buckets — join them for display
+  const catLabels = (cs: string[]) => cs.map(catLabel).join(' · ')
   const [active, setActive] = useState<(typeof categories)[number]>('All')
   const [preview, setPreview] = useState<Project | null>(null)
 
   const shown = useMemo(
-    () => (active === 'All' ? projects : projects.filter((p) => p.category === active)),
+    () =>
+      active === 'All' ? projects : projects.filter((p) => p.categories.includes(active)),
     [active],
   )
 
@@ -89,7 +92,7 @@ export default function Examples() {
                 <div
                   className="project-shot"
                   role="img"
-                  aria-label={`${p.title} — ${catLabel(p.category)}`}
+                  aria-label={`${p.title} — ${catLabels(p.categories)}`}
                   style={
                     p.image
                       ? { backgroundImage: `url(${p.image})` }
@@ -109,7 +112,7 @@ export default function Examples() {
               <div className="project-meta">
                 <div>
                   <h3 className="project-title">{p.title}</h3>
-                  <span className="project-cat">{catLabel(p.category)}</span>
+                  <span className="project-cat">{catLabels(p.categories)}</span>
                 </div>
                 <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
                   <path

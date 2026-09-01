@@ -69,7 +69,7 @@ export const en = {
     lead: 'Pick the kind of site you want — click any project to open a live example and play with it. Every demo is fully interactive.',
     categories: {
       all: 'All',
-      webApps: 'Web Apps',
+      ai: 'AI Automation',
       webDesign: 'Web Design',
       ecommerce: 'E-Commerce',
     },
