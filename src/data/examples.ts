@@ -28,6 +28,22 @@ export const categories: Array<'All' | Category> = [
 
 export const projects: Project[] = [
   {
+    id: 'dulbina',
+    title: 'Дълбина',
+    category: 'E-Commerce',
+    domain: 'dulbina-dive-example.vercel.app',
+    href: 'https://dulbina-dive-example.vercel.app/',
+    gradient: 'linear-gradient(135deg, #03090e 0%, #062a3a 50%, #04161f 100%)',
+  },
+  {
+    id: 'yuzhen-park',
+    title: 'Южен Парк Резиденс',
+    category: 'Web Design',
+    domain: 'yuzhen-park-residence-example.vercel.app',
+    href: 'https://yuzhen-park-residence-example.vercel.app/',
+    gradient: 'linear-gradient(135deg, #2a251d 0%, #4a4033 50%, #332c22 100%)',
+  },
+  {
     id: 'yourbrand',
     title: 'YourBrand Studio',
     category: 'Web Design',
