@@ -1,4 +1,5 @@
 import { useEffect } from 'react'
+import { createPortal } from 'react-dom'
 import { motion } from 'framer-motion'
 import { useTranslation } from 'react-i18next'
 import type { Project } from '../data/examples'
@@ -38,7 +39,10 @@ export default function ProjectModal({ project, catLabel, onClose }: Props) {
     }
   }, [onClose])
 
-  return (
+  // Portal to <body>: every .tile section sets `isolation: isolate`, so rendered
+  // in place the modal's z-index only ranks it inside #work and the next
+  // section paints over it.
+  return createPortal(
     <motion.div
       className="pm-backdrop"
       onClick={onClose}
@@ -152,6 +156,7 @@ export default function ProjectModal({ project, catLabel, onClose }: Props) {
           )}
         </div>
       </motion.div>
-    </motion.div>
+    </motion.div>,
+    document.body,
   )
 }
